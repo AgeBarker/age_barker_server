@@ -34,11 +34,11 @@ def predict_breed(image):
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image' not in request.files:
-        return jsonify({'error': 'Brak pliku w zapytaniu'}), 400
+        return jsonify({'error': 'file error'}), 400
     
     file = request.files['image']
     if file.filename == '':
-        return jsonify({'error': 'Brak wybranego pliku'}), 400
+        return jsonify({'error': 'file error'}), 400
 
     img = Image.open(io.BytesIO(file.read()))
     dog_img = cut_dog(img)
