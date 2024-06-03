@@ -3,6 +3,8 @@ from keras.models import load_model
 from PIL import Image
 import numpy as np
 import io
+import tensorflow as tf
+
 
 app = Flask(__name__)
 
@@ -30,7 +32,15 @@ def cut_dog(image):
     dog_image = cv2.resize(dog_image, dsize=IMAGE_SIZE)
     return dog_image
 
+def preprocess(image, img_size):
+    image = cv2.resize(image, img_size, interpolation=cv2.INTER_AREA)
+    image = tf.expand_dims(image, 0)
+    image = image / 255.0
+    return image
+    
+
 def predict_age(image):
+    preprocess_image = preprocess(image, (224, 224))
     # to be replaced with actual model
     # processed_img = preprocess_image(image)
     # age = age_predictor_model.predict(processed_img)
@@ -38,11 +48,13 @@ def predict_age(image):
     return age
 
 def predict_breed(image):
+    preprocess_image = preprocess(image, (331, 331))
     # to be replaced with actual model
     # processed_img = preprocess_image(image)
     # breed = breed_classifier_model.predict(processed_img)
     breed = "golden_retriever"
     return breed
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
