@@ -19,13 +19,15 @@ classes_age = {
 }
 
 def cut_dog(image):
-    # to be replaced with yolo model
-    width, height = image.size
-    left = (width - 224) // 2
-    top = (height - 224) // 2
-    right = left + 224
-    bottom = top + 224
-    dog_image = image.crop((left, top, right, bottom))
+    detector = dlib.cnn_face_detection_model_v1('dogHeadDetector.dat')
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    dets = detector(img, upsample_num_times=1)
+    if len(dets) == 0:
+        return None
+    x1, y1 = dets[0].rect.left(), dets[0].rect.top()
+    x2, y2 = dets[0].rect.right(), dets[0].rect.bottom()
+    dog_image = img[y1:y2, x1:x2]
+    dog_image = cv2.resize(dog_image, dsize=IMAGE_SIZE)
     return dog_image
 
 def predict_age(image):
