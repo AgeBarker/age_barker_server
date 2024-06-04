@@ -29,7 +29,6 @@ def cut_dog(image):
     x1, y1 = dets[0].rect.left(), dets[0].rect.top()
     x2, y2 = dets[0].rect.right(), dets[0].rect.bottom()
     dog_image = img[y1:y2, x1:x2]
-    dog_image = cv2.resize(dog_image, dsize=IMAGE_SIZE)
     return dog_image
 
 def preprocess(image, img_size):
