@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from keras.models import load_model
 from PIL import Image
 import numpy as np
@@ -6,7 +7,9 @@ import io, dlib, cv2
 import tensorflow as tf
 
 
+
 app = Flask(__name__)
+CORS(app)
 
 # age_predictor_model = load_model('models/age_predictor.keras')
 # breed_classifier_model = load_model('models/breed_classifier.keras')
@@ -21,6 +24,8 @@ classes_age = {
 }
 
 def cut_dog(image):
+    print("DUUUUUUUPA twarze psa")
+
     detector = dlib.cnn_face_detection_model_v1('dogHeadDetector.dat')
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     dets = detector(img, upsample_num_times=1)
@@ -32,6 +37,8 @@ def cut_dog(image):
     return dog_image
 
 def preprocess(image, img_size):
+    print("DUUUUUUUPA preprocesing!!")
+
     image = cv2.resize(image, img_size, interpolation=cv2.INTER_AREA)
     image = tf.expand_dims(image, 0)
     image = image / 255.0
@@ -42,7 +49,7 @@ def predict_age(image):
     preprocess_image = preprocess(image, (224, 224))
     # to be replaced with actual model
     # processed_img = preprocess_image(image)
-    # age = age_predictor_model.predict(processed_img)
+    # age = age_predictor_model.predict(preprocess_image)
     age = np.random.randint(0, 3)
     return age
 
@@ -54,9 +61,14 @@ def predict_breed(image):
     breed = "golden_retriever"
     return breed
 
+@app.route('/')
+def index():
+    return 'Hello, World!'
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    print("DUUUUUUUPA PRZYSZŁO!!!")
+
     if 'image' not in request.files:
         return jsonify({'error': 'file error'}), 400
     
@@ -64,10 +76,16 @@ def predict():
     if file.filename == '':
         return jsonify({'error': 'file error'}), 400
 
-    img = Image.open(io.BytesIO(file.read()))
-    dog_img = cut_dog(img)
-    age = predict_age(dog_img)          # 0 - young, 1 - adult, 2 - old zamienić na string
-    breed = predict_breed(dog_img)      # nazwa rasy psa
+    # img = Image.open(io.BytesIO(file.read()))
+    # print(img)
+    pil_image = Image.open(io.BytesIO(file.read())).convert('RGB')
+    open_cv_image = np.array(pil_image)
+    # Convert RGB to BGR
+    open_cv_image = open_cv_image[:, :, ::-1].copy()
+
+    # dog_img = cut_dog(open_cv_image)
+    age = predict_age(open_cv_image)          # 0 - young, 1 - adult, 2 - old zamienić na string
+    breed = predict_breed(open_cv_image)      # nazwa rasy psa
 
     response = {
         'age': age,
@@ -77,4 +95,4 @@ def predict():
     return jsonify(response)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
