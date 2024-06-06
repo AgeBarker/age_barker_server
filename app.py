@@ -32,20 +32,17 @@ mapping = dict(zip(classes_int, classes))
 
 
 def cut_dog(image):
-    print("DUUUUUUUPA twarze psa")
+    print("wycinanie mordeczki psa")
     detector = dlib.cnn_face_detection_model_v1('dogHeadDetector.dat')
 
-    print("DUUUUUUUP 2")
     i = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     img = cv2.resize(i, (640, 480))
     dets = detector(img, upsample_num_times=1)
 
-    print("DUUUUUUUP 3")
     if len(dets) == 0:
         return None
     x1, y1 = dets[0].rect.left(), dets[0].rect.top()
     x2, y2 = dets[0].rect.right(), dets[0].rect.bottom()
-    print("DUUUUUUUP 4")
     dog_image = img[y1:y2, x1:x2]
     cv2.imwrite('dog.jpg', dog_image)
     return dog_image
@@ -60,15 +57,12 @@ def predict_age(image):
     preprocess_image = preprocess(image, (224, 224))
     age = age_predictor_model.predict(preprocess_image)
     age = np.argmax(age)
-    # age = np.random.randint(0, 3)
     return age
 
 def predict_breed(image):
     preprocess_image = preprocess(image, (331, 331))
     breed = breed_classifier_model.predict(preprocess_image)
-
     breed = mapping[np.argmax(breed)]
-    # breed = "golden_retriever"
     return breed
 
 @app.route('/')
